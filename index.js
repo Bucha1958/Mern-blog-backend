@@ -33,6 +33,11 @@ mongoose.connect(url, {
     console.error('Error connecting to MongoDB: ' + err);
 });
 
+app.get('/', (req, res) => {
+    res.send('My app is successfully deployed on Render!');
+});
+
+
 app.post('/register', async (req, res) => {
 
     const {username, password} = req.body;

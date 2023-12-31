@@ -9,6 +9,8 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer  = require('multer');
 const fs = require('fs');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
 require('dotenv').config();
 
 // Middleware for handling file uploads
@@ -24,6 +26,23 @@ app.use(express.json());
 app.use(cookieParser())
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
+// Define Swagger options
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Rest API Documentation',
+      version: '1.0.0',
+    },
+  },
+  apis: [__filename], // Path to the files containing Swagger JSDoc comments
+};
+
+const specs = swaggerJsdoc(options);
+
+// Serve Swagger UI
+app.use('/', swaggerUi.serve, swaggerUi.setup(specs));
+
 // Database connection
 const url = process.env.DATABASE_URL;
 mongoose.connect(url, {
@@ -35,10 +54,33 @@ mongoose.connect(url, {
     console.error('Error connecting to MongoDB: ' + err);
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-    res.send('My app is successfully deployed on Render!');
-});
+
+/**
+ * @swagger
+ * /register:
+ *   post:
+ *     summary: Register a new user
+ *     description: Create a new user with the provided username and password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User registration successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "someUserId"
+ *               username: "someUsername"
+ */
 
 // User registration endpoint
 app.post('/register', async (req, res) => {
@@ -51,6 +93,33 @@ app.post('/register', async (req, res) => {
         res.status(400).json(e);
     }
 });
+
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: Log in an existing user
+ *     description: Authenticate an existing user based on the provided username and password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User login successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               id: "someUserId"
+ *               username: "someUsername"
+ */
 
 // User login endpoint
 app.post('/login', async (req, res) => {
@@ -84,6 +153,40 @@ app.get('/profile', (req, res) => {
         res.json(info);
     })
 })
+
+/**
+ * @swagger
+ * /post:
+ *   post:
+ *     summary: Create a new post
+ *     description: Create a new post with title, summary, content, and an optional file upload.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               summary:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Post creation successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "somePostId"
+ *               title: "Sample Post"
+ *               summary: "This is a sample post"
+ *               author: "someUserId"
+ */
 
 // Post creation endpoint
 app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
@@ -139,6 +242,23 @@ app.put('/post',uploadMiddleware.single('file'), async (req,res) => {
   
 });
 
+/**
+ * @swagger
+ * /post:
+ *   get:
+ *     summary: Get a list of posts
+ *     description: Retrieve a list of posts with details.
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             example:
+ *               - title: "Sample Post"
+ *                 summary: "This is a sample post"
+ *                 author: { username: "sample_user" }
+ */
+
 // Get all posts endpoint
 app.get('/post', async (req, res) => {
     const posts = await PostModal.find()
@@ -147,6 +267,31 @@ app.get('/post', async (req, res) => {
         .limit(20);
     res.json(posts);
 })
+
+/**
+ * @swagger
+ * /post/{id}:
+ *   get:
+ *     summary: Get a specific post by ID
+ *     description: Retrieve details of a post based on its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the post
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: "somePostId"
+ *               title: "Sample Post"
+ *               summary: "This is a sample post"
+ *               author: { username: "sample_user" }
+ */
 
 // Get a specific post by ID endpoint
 app.get('/post/:id', async (req, res) => {

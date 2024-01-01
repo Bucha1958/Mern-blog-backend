@@ -28,20 +28,36 @@ app.use('/uploads', express.static(__dirname + '/uploads'));
 
 // Define Swagger options
 const options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Rest API Documentation',
-      version: '1.0.0',
+    definition: {
+        openapi: '3.0.0',
+        info: {
+        title: 'Rest API Documentation',
+        version: '1.0.0',
+        },
+        components: {
+            securitySchemes: {
+            bearerAuth: {
+                type: "http",
+                scheme: "bearer",
+                bearerFormat: "JWT",
+            },
+            },
+        },
+        security: [
+            {
+            bearerAuth: [],
+            },
+        ],
     },
-  },
-  apis: [__filename], // Path to the files containing Swagger JSDoc comments
+    apis: [__filename], // Path to the files containing Swagger JSDoc comments
 };
 
 const specs = swaggerJsdoc(options);
 
+
+
 // Serve Swagger UI
-app.use('/', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Database connection
 const url = process.env.DATABASE_URL;

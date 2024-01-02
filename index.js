@@ -77,23 +77,24 @@ mongoose.connect(url, {
 });
 
 
+
 /**
  * @swagger
  * /register:
  *   post:
- *           summary: Register a new user
- *            description: Create a new user with the provided username and password.
- *            requestBody:
- *              required: true
- *              content:
- *                application/json:
- *                  schema:
- *                    type: object
- *                    properties:
- *                      username:
- *                        type: string
- *                      password:
- *                        type: string
+ *     summary: Register a new user
+ *     description: Create a new user with the provided username and password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
  *     responses:
  *       200:
  *         description: User registration successful

@@ -59,6 +59,12 @@ const specs = swaggerJsdoc(options);
 // Serve Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
+// Expose swagger JSON 
+app.get('/api-docs/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(specs);
+});
+
 // Database connection
 const url = process.env.DATABASE_URL;
 mongoose.connect(url, {
@@ -75,19 +81,19 @@ mongoose.connect(url, {
  * @swagger
  * /register:
  *   post:
- *     summary: Register a new user
- *     description: Create a new user with the provided username and password.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
+ *           summary: Register a new user
+ *            description: Create a new user with the provided username and password.
+ *            requestBody:
+ *              required: true
+ *              content:
+ *                application/json:
+ *                  schema:
+ *                    type: object
+ *                    properties:
+ *                      username:
+ *                        type: string
+ *                      password:
+ *                        type: string
  *     responses:
  *       200:
  *         description: User registration successful

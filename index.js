@@ -271,6 +271,22 @@ app.put('/post',uploadMiddleware.single('file'), async (req,res) => {
  *   get:
  *     summary: Get a list of posts
  *     description: Retrieve a list of posts with details.
+ *     parameters:
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *         description: Sort the posts by a specific field (e.g., createdAt).
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Limit the number of posts returned (default is 20).
+ *       - in: query
+ *         name: keyword
+ *         schema:
+ *           type: string
+ *         description: Filter posts based on a keyword in the title or summary.
  *     responses:
  *       200:
  *         description: Successful response
@@ -284,6 +300,23 @@ app.put('/post',uploadMiddleware.single('file'), async (req,res) => {
 
 // Get all posts endpoint
 app.get('/post', async (req, res) => {
+    const { sortBy, limit, keyword } = req.query;
+
+    // Create a query object based on the provided parameters
+    const query = {};
+
+    if (sortBy) {
+        // If sortBy is provided, add sorting to the query
+        query.sortBy = sortBy;
+    }
+
+    // If keyword is provided, add a regex filter to match the title or summary
+    if (keyword) {
+        query.$or = [
+            { title: { $regex: keyword, $options: 'i' } }, // Case-insensitive regex for title
+            { summary: { $regex: keyword, $options: 'i' } } // Case-insensitive regex for summary
+        ];
+    }
     const posts = await PostModal.find()
         .populate('author', ['username'])
         .sort({createdAt: -1})
